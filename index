@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#43276F">
+<title>New Faculty Schedules</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --plum:#43276F; --plum-deep:#2E1A4F; --plum-soft:#6B4A9E;
+  --ink:#2B2039; --ink-2:#5C5170; --ink-3:#786D8B;
+  --paper:#fff; --wash:#F5F1F9; --line:#E0D7EC; --line-2:#EFE9F6;
+  --gold:#C9A227; --gold-deep:#8A6D12; --gold-soft:#F3E8C4;
+  --gutter:62px}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0}
+body{font-family:Archivo,system-ui,sans-serif;color:var(--ink);background:var(--wash);
+  font-size:16px;line-height:1.4;font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+.wrap{max-width:620px;margin:0 auto;background:var(--paper);min-height:100vh;box-shadow:0 0 0 1px var(--line-2)}
+ 
+header{position:sticky;top:0;z-index:40;background:var(--plum);color:#fff;
+  padding:14px 16px 0;padding-top:calc(14px + env(safe-area-inset-top));
+  border-bottom:3px solid var(--gold)}
+.hrow{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+h1{margin:0;font-size:19px;font-weight:700;letter-spacing:-.015em}
+.clock{font-size:15px;font-weight:500;color:var(--gold-soft)}
+ 
+.modes{display:inline-flex;gap:2px;background:rgba(255,255,255,.13);border-radius:9px;padding:2px;margin:12px 0 0}
+.mode{padding:5px 14px;border-radius:7px;font-size:14px;font-weight:600;color:#D8C9EE}
+.mode[aria-pressed=true]{background:var(--gold);color:var(--plum-deep)}
+ 
+.picker{margin-top:11px;min-height:38px}
+.days{display:flex;gap:5px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.days::-webkit-scrollbar{display:none}
+.day{min-width:34px;height:34px;border-radius:9px;font-size:15px;font-weight:600;
+  background:rgba(255,255,255,.13);color:#E2D6F2;flex:0 0 auto}
+.day[aria-pressed=true]{background:var(--gold);color:var(--plum-deep)}
+.day.mark::after{content:"";display:block;width:4px;height:4px;border-radius:50%;
+  background:var(--gold);margin:-6px auto 0}
+.day.mark[aria-pressed=true]::after{background:var(--plum-deep)}
+ 
+.datenav{display:flex;align-items:center;gap:8px}
+.arrow{width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,.13);
+  font-size:17px;font-weight:600;color:#E2D6F2;line-height:1;flex:0 0 auto}
+.arrow[disabled]{opacity:.3;cursor:default}
+.datebtn{flex:1;height:34px;border-radius:9px;background:var(--gold);
+  font-size:14.5px;font-weight:600;color:var(--plum-deep);padding:0 12px;position:relative;overflow:hidden}
+.datebtn input{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer}
+ 
+.sub{font-size:13px;color:#D8C9EE;margin-top:9px}
+.sub b{color:var(--gold-soft);font-weight:600}
+.people{display:block;text-align:left;margin:11px -16px 0;width:calc(100% + 32px);
+  padding:11px 16px;background:rgba(0,0,0,.16);border-top:1px solid rgba(255,255,255,.12);
+  font-size:14px;font-weight:600;color:#EDE4F7}
+.people span{float:right;color:var(--gold-soft);font-weight:500}
+ 
+main{padding:0 0 40px}
+.slot{display:grid;grid-template-columns:var(--gutter) 1fr;border-bottom:1px solid var(--line-2)}
+.time{padding:14px 10px 14px 16px;font-size:14px;font-weight:600;color:var(--ink-2);
+  border-right:1px solid var(--line-2);line-height:1.25}
+.time em{display:block;font-style:normal;font-size:12px;font-weight:400;color:var(--ink-3);margin-top:1px}
+.items{padding:6px 0}
+.item{width:100%;text-align:left;display:block;padding:9px 16px 10px}
+.item:focus-visible{outline:2px solid var(--plum);outline-offset:-3px}
+.who{font-size:16.5px;font-weight:600;letter-spacing:-.01em;color:var(--plum-deep)}
+.what{font-size:14.5px;color:var(--ink-2);margin-top:2px}
+.where{font-size:13.5px;color:var(--ink-3);margin-top:3px}
+.tag{display:inline-block;font-size:11.5px;font-weight:600;padding:1px 6px;border-radius:5px;
+  background:var(--gold-soft);color:var(--gold-deep);margin-left:6px;vertical-align:1px}
+.nowline{display:grid;grid-template-columns:var(--gutter) 1fr;align-items:center;
+  background:linear-gradient(90deg,rgba(201,162,39,.16),transparent 72%)}
+.nowline .nt{padding:5px 10px 5px 16px;font-size:12.5px;font-weight:700;color:var(--gold-deep);
+  border-right:1px solid var(--line-2)}
+.nowline .nb{height:3px;background:var(--gold);margin-right:16px;border-radius:2px}
+.panel{padding:2px 16px 14px;background:var(--wash);border-top:1px solid var(--line-2)}
+.panel .meta{font-size:13.5px;color:var(--ink-2);margin:10px 0 12px;line-height:1.55}
+.acts{display:flex;gap:8px;flex-wrap:wrap}
+.btn{padding:10px 14px;border-radius:10px;font-size:14.5px;font-weight:600;background:var(--plum);color:#fff}
+.btn.ghost{background:transparent;color:var(--plum);box-shadow:inset 0 0 0 1.5px var(--line)}
+.empty{padding:52px 24px;text-align:center;color:var(--ink-3);font-size:15px}
+.empty b{display:block;color:var(--plum-deep);font-size:17px;font-weight:600;margin-bottom:6px}
+dialog{border:0;border-radius:16px;padding:0;max-width:min(460px,92vw);width:100%;
+  box-shadow:0 24px 60px rgba(46,26,79,.34)}
+dialog::backdrop{background:rgba(46,26,79,.55)}
+.dlg{padding:20px}
+.dlg h2{margin:0 0 14px;font-size:18px;font-weight:700;color:var(--plum-deep)}
+.rows{max-height:52vh;overflow:auto;margin:0 -6px}
+.wrow{display:flex;align-items:center;gap:11px;padding:10px 6px;width:100%;text-align:left;
+  border-bottom:1px solid var(--line-2);font-size:15.5px}
+.wrow:last-child{border-bottom:0}
+.box{width:21px;height:21px;border-radius:6px;box-shadow:inset 0 0 0 1.5px var(--line);
+  flex:0 0 auto;position:relative}
+.wrow[aria-pressed=true] .box{background:var(--plum);box-shadow:none}
+.wrow[aria-pressed=true] .box::after{content:"";position:absolute;left:7px;top:3px;width:5px;height:10px;
+  border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
+.wsub{color:var(--ink-3);font-size:13px;margin-left:auto}
+.dlg .acts{margin-top:18px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style></head><body>
+<div class="wrap">
+<header>
+  <div class="hrow"><h1>New faculty schedules</h1><div class="clock" id="clock"></div></div>
+  <div class="modes">
+    <button class="mode" id="mDay">By day</button><button class="mode" id="mDate">By date</button>
+  </div>
+  <div class="picker" id="picker"></div>
+  <div class="sub" id="sub"></div>
+  <button class="people" id="people"></button>
+</header>
+<main id="rail"></main>
+</div>
+<dialog id="dlgWho"><div class="dlg">
+  <h2>Who to show</h2>
+  <div class="rows" id="whoRows"></div>
+  <div class="acts">
+    <button class="btn" id="whoDone">Show these</button>
+    <button class="btn ghost" id="whoAll">Select everyone</button>
+  </div>
+</div></dialog>
+<script>
+const RAW=[[1,"08:30","09:45","Caroline Johnston","US History","4","E","Masters Hall","206","US"],[1,"08:30","09:10","Chuck McNamee","Entrepreneurial Leadership","1","Ea","IEC","306","US"],[1,"08:30","09:45","Eleanor Erickson","Algebra I","2","E","Masters Hall","319","US"],[1,"08:30","09:20","Jackie Telford","7 English","7C","-","Middle School","209","MS"],[1,"08:30","09:45","Jonathan Serrano","Spanish III","3","EL","Masters Hall","208","US"],[1,"08:30","09:45","Maggie Rivers","AP Physics C","2","EL","Morris Hall","111","US"],[1,"08:30","09:20","Marianna Manganiello","7 Spanish-SP","7A","-","Middle School","110","MS"],[1,"09:25","10:15","Marianna Manganiello","8 Spanish","SP 8A","-","Middle School","110","MS"],[1,"10:30","11:45","Alejandra Leos","English 9","6","FL","Masters Hall","209","US"],[1,"10:30","11:10","Chuck McNamee","Sustainable Design","1","Fa","IEC","306","US"],[1,"10:30","11:45","Eleanor Erickson","Geometry","3","FL","Masters Hall","204","US"],[1,"10:30","11:45","Maya Zakarin","Engineering Drawing & Design","1","F","IEC","201","US"],[1,"10:35","11:25","Annabelle Rolland","8 French","1","-","Middle School","108","MS"],[1,"10:35","11:25","Marianna Manganiello","8 Spanish","SP 8BCD","-","Middle School","110","MS"],[1,"11:50","13:05","Alejandra Leos","English 10","9","GL","IEC","306","US"],[1,"11:50","13:05","Emile Gable","Language Lab","2","GL","IEC","301","US"],[1,"11:50","13:05","Maggie Rivers","Physics: Mechanics","2","GL","Morris Hall","111","US"],[1,"12:15","13:05","Jackie Telford","7 English","7D","-","Middle School","209","MS"],[1,"12:30","13:45","Ailie Wood","Honors Alg II/Trig","3","G","Masters Hall","318","US"],[1,"13:45","14:35","Jackie Telford","7 English","7B","-","Middle School","209","MS"],[1,"13:50","15:05","Ailie Wood","Honors Alg II/Trig","4","HL","Masters Hall","304","US"],[1,"13:50","15:05","Annabelle Rolland","French I","1","HL","Masters Hall","333","US"],[1,"13:50","15:05","Caroline Johnston","US History","5","H","Morris Hall","204","US"],[1,"13:50","15:05","Emile Gable","English 9","9","HL","Masters Hall","218","US"],[1,"13:50","15:05","Jonathan Serrano","Spanish III","4","HL","Masters Hall","206","US"],[2,"08:30","09:45","Annabelle Rolland","Honors French III","1","CL","Masters Hall","306","US"],[2,"08:30","09:10","Chuck McNamee","Intro to Social Entrepreneurship","2","Ca","IEC","306","US"],[2,"08:30","09:45","Eleanor Erickson","Geometry","2","C","Masters Hall","304","US"],[2,"08:30","09:45","Jonathan Serrano","Spanish II","2","CL","Masters Hall","204","US"],[2,"08:30","09:45","Maggie Rivers","Physics: Mechanics","1","CL","Morris Hall","111","US"],[2,"09:25","10:15","Jackie Telford","7 English","7B","-","Middle School","209","MS"],[2,"09:25","10:15","Marianna Manganiello","7 Spanish-SP","7A","-","Middle School","110","MS"],[2,"10:30","11:45","Ailie Wood","Honors Precalculus","2","DL","Masters Hall","202","US"],[2,"10:30","11:45","Caroline Johnston","US History","3","DL","IEC","306","US"],[2,"10:30","11:45","Emile Gable","English 9","4","DL","Masters Hall","218","US"],[2,"10:30","11:45","Maggie Rivers","AP Physics C","1","D","Morris Hall","111","US"],[2,"10:30","11:45","Maya Zakarin","Principles of Engineering","2","DL","IEC","201","US"],[2,"10:35","11:25","Annabelle Rolland","8 French","1","-","Middle School","208","MS"],[2,"10:35","11:25","Marianna Manganiello","8 Spanish","SP 8BCD","-","Middle School","110","MS"],[2,"11:50","13:05","Alejandra Leos","English 9","2","AL","Masters Hall","333","US"],[2,"11:50","13:05","Emile Gable","English 9","1","AL","Masters Hall","306","US"],[2,"12:30","13:45","Jonathan Serrano","Spanish II","1","A","Masters Hall","208","US"],[2,"12:30","13:45","Maya Zakarin","Engineering Essentials","1","A","IEC","201","US"],[2,"13:45","14:35","Jackie Telford","7 English","7D","-","Middle School","209","MS"],[2,"13:45","14:35","Marianna Manganiello","8 Spanish","SP 8A","-","Middle School","110","MS"],[2,"13:50","15:05","Ailie Wood","AP Calculus BC","1","BL","Masters Hall","204","US"],[2,"13:50","15:05","Alejandra Leos","English 9","3","B","Morris Hall","113","US"],[2,"13:50","15:05","Caroline Johnston","International Relations","1","BL","Masters Hall","203","US"],[2,"13:50","14:30","Chuck McNamee","Intro to Social Entrepreneurship","1","Ba","IEC","306","US"],[2,"13:50","15:05","Eleanor Erickson","Algebra I","1","BL","Masters Hall","319","US"],[2,"13:50","15:05","Maya Zakarin","Principles of Engineering","1","B","IEC","201","US"],[2,"14:40","15:30","Annabelle Rolland","7 French","1","-","Middle School","106","MS"],[2,"14:40","15:30","Jackie Telford","7 English","7A","-","Middle School","209","MS"],[2,"14:40","15:30","Marianna Manganiello","7 Spanish-SP","7BCD","-","Middle School","110","MS"],[3,"08:30","09:45","Ailie Wood","Honors Alg II/Trig","3","G","Masters Hall","318","US"],[3,"08:30","09:45","Alejandra Leos","English 10","9","GL","IEC","306","US"],[3,"08:30","09:45","Emile Gable","Language Lab","2","GL","IEC","301","US"],[3,"08:30","09:20","Jackie Telford","7 English","7A","-","Middle School","209","MS"],[3,"08:30","09:45","Maggie Rivers","Physics: Mechanics","2","GL","Morris Hall","111","US"],[3,"09:25","10:15","Marianna Manganiello","7 Spanish-SP","7A","-","Middle School","110","MS"],[3,"10:30","11:45","Ailie Wood","Honors Alg II/Trig","4","HL","Masters Hall","304","US"],[3,"10:30","11:45","Annabelle Rolland","French I","1","HL","Masters Hall","333","US"],[3,"10:30","11:45","Caroline Johnston","US History","5","H","Morris Hall","204","US"],[3,"10:30","11:45","Emile Gable","English 9","9","HL","Masters Hall","218","US"],[3,"10:30","11:45","Jonathan Serrano","Spanish III","4","HL","Masters Hall","206","US"],[3,"10:35","11:25","Jackie Telford","7 English","7C","-","Middle School","209","MS"],[3,"11:50","12:30","Chuck McNamee","Entrepreneurial Leadership","1","Ea","IEC","306","US"],[3,"11:50","13:05","Jonathan Serrano","Spanish III","3","EL","Masters Hall","208","US"],[3,"11:50","13:05","Maggie Rivers","AP Physics C","2","EL","Morris Hall","111","US"],[3,"12:15","13:05","Jackie Telford","7 English","7D","-","Middle School","209","MS"],[3,"12:15","13:05","Marianna Manganiello","5 Lang/Health","5A","-","Middle School","110","MS"],[3,"12:30","13:45","Caroline Johnston","US History","4","E","Masters Hall","206","US"],[3,"12:30","13:45","Eleanor Erickson","Algebra I","2","E","Masters Hall","319","US"],[3,"13:45","14:35","Annabelle Rolland","7 French","1","-","Middle School","106","MS"],[3,"13:45","14:35","Marianna Manganiello","7 Spanish-SP","7BCD","-","Middle School","110","MS"],[3,"13:50","15:05","Alejandra Leos","English 9","6","FL","Masters Hall","209","US"],[3,"13:50","14:30","Chuck McNamee","Sustainable Design","1","Fa","IEC","306","US"],[3,"13:50","15:05","Eleanor Erickson","Geometry","3","FL","Masters Hall","204","US"],[3,"13:50","15:05","Maya Zakarin","Engineering Drawing & Design","1","F","IEC","201","US"],[4,"08:30","09:45","Ailie Wood","AP Calculus BC","1","BL","Masters Hall","204","US"],[4,"08:30","09:45","Alejandra Leos","English 9","3","B","Morris Hall","113","US"],[4,"08:30","09:45","Caroline Johnston","International Relations","1","BL","Masters Hall","203","US"],[4,"08:30","09:10","Chuck McNamee","Intro to Social Entrepreneurship","1","Ba","IEC","306","US"],[4,"08:30","09:45","Eleanor Erickson","Algebra I","1","BL","Masters Hall","319","US"],[4,"08:30","09:20","Jackie Telford","7 English","7B","-","Middle School","209","MS"],[4,"08:30","09:45","Maya Zakarin","Principles of Engineering","1","B","IEC","201","US"],[4,"09:25","10:15","Jackie Telford","7 English","7C","-","Middle School","209","MS"],[4,"10:30","11:45","Alejandra Leos","English 9","2","AL","Masters Hall","333","US"],[4,"10:30","11:45","Emile Gable","English 9","1","AL","Masters Hall","306","US"],[4,"10:30","11:45","Jonathan Serrano","Spanish II","1","A","Masters Hall","208","US"],[4,"10:30","11:45","Maya Zakarin","Engineering Essentials","1","A","IEC","201","US"],[4,"10:35","11:25","Annabelle Rolland","8 French","1","-","Middle School","108","MS"],[4,"10:35","11:25","Marianna Manganiello","8 Spanish","SP 8BCD","-","Middle School","110","MS"],[4,"11:50","13:05","Ailie Wood","Honors Precalculus","2","DL","Masters Hall","202","US"],[4,"11:50","13:05","Caroline Johnston","US History","3","DL","IEC","306","US"],[4,"11:50","13:05","Emile Gable","English 9","4","DL","Masters Hall","218","US"],[4,"11:50","13:05","Maya Zakarin","Principles of Engineering","2","DL","IEC","201","US"],[4,"12:15","13:05","Jackie Telford","7 English","7D","-","Middle School","209","MS"],[4,"12:30","13:45","Maggie Rivers","AP Physics C","1","D","Morris Hall","111","US"],[4,"13:45","14:35","Marianna Manganiello","8 Spanish","SP 8A","-","Middle School","110","MS"],[4,"13:50","15:05","Annabelle Rolland","Honors French III","1","CL","Masters Hall","306","US"],[4,"13:50","14:30","Chuck McNamee","Intro to Social Entrepreneurship","2","Ca","IEC","306","US"],[4,"13:50","15:05","Eleanor Erickson","Geometry","2","C","Masters Hall","304","US"],[4,"13:50","15:05","Jonathan Serrano","Spanish II","2","CL","Masters Hall","204","US"],[4,"13:50","15:05","Maggie Rivers","Physics: Mechanics","1","CL","Morris Hall","111","US"],[5,"08:30","09:45","Alejandra Leos","English 9","6","FL","Masters Hall","209","US"],[5,"08:30","09:20","Annabelle Rolland","7 French","1","-","Middle School","211","MS"],[5,"08:30","09:10","Chuck McNamee","Sustainable Design","1","Fa","IEC","306","US"],[5,"08:30","09:45","Eleanor Erickson","Geometry","3","FL","Masters Hall","204","US"],[5,"08:30","09:20","Jackie Telford","7 English","7A","-","Middle School","209","MS"],[5,"08:30","09:20","Marianna Manganiello","7 Spanish-SP","7BCD","-","Middle School","110","MS"],[5,"08:30","09:45","Maya Zakarin","Engineering Drawing & Design","1","F","IEC","201","US"],[5,"09:25","10:15","Jackie Telford","7 English","7B","-","Middle School","209","MS"],[5,"10:30","11:45","Caroline Johnston","US History","4","E","Masters Hall","206","US"],[5,"10:30","11:10","Chuck McNamee","Entrepreneurial Leadership","1","Ea","IEC","306","US"],[5,"10:30","11:45","Eleanor Erickson","Algebra I","2","E","Masters Hall","319","US"],[5,"10:30","11:45","Jonathan Serrano","Spanish III","3","EL","Masters Hall","208","US"],[5,"10:30","11:45","Maggie Rivers","AP Physics C","2","EL","Morris Hall","111","US"],[5,"10:35","11:25","Marianna Manganiello","7 Spanish-SP","7A","-","Middle School","110","MS"],[5,"11:50","13:05","Ailie Wood","Honors Alg II/Trig","4","HL","Masters Hall","304","US"],[5,"11:50","13:05","Annabelle Rolland","French I","1","HL","Masters Hall","333","US"],[5,"11:50","13:05","Emile Gable","English 9","9","HL","Masters Hall","218","US"],[5,"11:50","13:05","Jonathan Serrano","Spanish III","4","HL","Masters Hall","206","US"],[5,"12:15","13:05","Marianna Manganiello","8 Spanish","SP 8A","-","Middle School","110","MS"],[5,"12:30","13:45","Caroline Johnston","US History","5","H","Morris Hall","204","US"],[5,"13:45","14:35","Jackie Telford","7 English","7C","-","Middle School","209","MS"],[5,"13:50","15:05","Ailie Wood","Honors Alg II/Trig","3","G","Masters Hall","318","US"],[5,"13:50","15:05","Alejandra Leos","English 10","9","GL","IEC","306","US"],[5,"13:50","15:05","Emile Gable","Language Lab","2","GL","IEC","301","US"],[5,"13:50","15:05","Maggie Rivers","Physics: Mechanics","2","GL","Morris Hall","111","US"],[5,"14:40","15:30","Marianna Manganiello","5 Lang/Health","5A","-","Middle School","110","MS"],[6,"08:30","09:45","Ailie Wood","Honors Precalculus","2","DL","Masters Hall","202","US"],[6,"08:30","09:20","Annabelle Rolland","8 French","1","-","Middle School","108","MS"],[6,"08:30","09:45","Caroline Johnston","US History","3","DL","IEC","306","US"],[6,"08:30","09:45","Emile Gable","English 9","4","DL","Masters Hall","218","US"],[6,"08:30","09:45","Maggie Rivers","AP Physics C","1","D","Morris Hall","111","US"],[6,"08:30","09:20","Marianna Manganiello","8 Spanish","SP 8BCD","-","Middle School","110","MS"],[6,"08:30","09:45","Maya Zakarin","Principles of Engineering","2","DL","IEC","201","US"],[6,"09:25","10:15","Jackie Telford","7 English","7D","-","Middle School","209","MS"],[6,"10:30","11:45","Annabelle Rolland","Honors French III","1","CL","Masters Hall","306","US"],[6,"10:30","11:10","Chuck McNamee","Intro to Social Entrepreneurship","2","Ca","IEC","306","US"],[6,"10:30","11:45","Eleanor Erickson","Geometry","2","C","Masters Hall","304","US"],[6,"10:30","11:45","Jonathan Serrano","Spanish II","2","CL","Masters Hall","204","US"],[6,"10:30","11:45","Maggie Rivers","Physics: Mechanics","1","CL","Morris Hall","111","US"],[6,"10:35","11:25","Marianna Manganiello","8 Spanish","SP 8A","-","Middle School","110","MS"],[6,"11:50","13:05","Ailie Wood","AP Calculus BC","1","BL","Masters Hall","204","US"],[6,"11:50","13:05","Caroline Johnston","International Relations","1","BL","Masters Hall","203","US"],[6,"11:50","13:05","Eleanor Erickson","Algebra I","1","BL","Masters Hall","319","US"],[6,"12:15","13:05","Annabelle Rolland","7 French","1","-","Middle School","106","MS"],[6,"12:15","13:05","Jackie Telford","7 English","7A","-","Middle School","209","MS"],[6,"12:15","13:05","Marianna Manganiello","7 Spanish-SP","7BCD","-","Middle School","110","MS"],[6,"12:30","13:45","Alejandra Leos","English 9","3","B","Morris Hall","113","US"],[6,"12:30","13:10","Chuck McNamee","Intro to Social Entrepreneurship","1","Ba","IEC","306","US"],[6,"12:30","13:45","Maya Zakarin","Principles of Engineering","1","B","IEC","201","US"],[6,"13:45","14:35","Jackie Telford","7 English","7B","-","Middle School","209","MS"],[6,"13:45","14:35","Marianna Manganiello","7 Spanish-SP","7A","-","Middle School","110","MS"],[6,"13:50","15:05","Alejandra Leos","English 9","2","AL","Masters Hall","333","US"],[6,"13:50","15:05","Emile Gable","English 9","1","AL","Masters Hall","306","US"],[6,"13:50","15:05","Jonathan Serrano","Spanish II","1","A","Masters Hall","208","US"],[6,"13:50","15:05","Maya Zakarin","Engineering Essentials","1","A","IEC","201","US"],[7,"08:30","09:45","Ailie Wood","Honors Alg II/Trig","4","HL","Masters Hall","304","US"],[7,"08:30","09:45","Annabelle Rolland","French I","1","HL","Masters Hall","333","US"],[7,"08:30","09:45","Caroline Johnston","US History","5","H","Morris Hall","204","US"],[7,"08:30","09:45","Emile Gable","English 9","9","HL","Masters Hall","218","US"],[7,"08:30","09:20","Jackie Telford","7 English","7C","-","Middle School","209","MS"],[7,"08:30","09:45","Jonathan Serrano","Spanish III","4","HL","Masters Hall","206","US"],[7,"08:30","09:20","Marianna Manganiello","8 Spanish","SP 8A","-","Middle School","110","MS"],[7,"09:25","10:15","Jackie Telford","7 English","7D","-","Middle School","209","MS"],[7,"10:30","11:45","Ailie Wood","Honors Alg II/Trig","3","G","Masters Hall","318","US"],[7,"10:30","11:45","Alejandra Leos","English 10","9","GL","IEC","306","US"],[7,"10:30","11:45","Emile Gable","Language Lab","2","GL","IEC","301","US"],[7,"10:30","11:45","Maggie Rivers","Physics: Mechanics","2","GL","Morris Hall","111","US"],[7,"10:35","11:25","Jackie Telford","7 English","7A","-","Middle School","209","MS"],[7,"11:50","13:05","Alejandra Leos","English 9","6","FL","Masters Hall","209","US"],[7,"11:50","13:05","Eleanor Erickson","Geometry","3","FL","Masters Hall","204","US"],[7,"12:15","13:05","Annabelle Rolland","7 French","1","-","Middle School","106","MS"],[7,"12:15","13:05","Marianna Manganiello","7 Spanish-SP","7BCD","-","Middle School","110","MS"],[7,"12:30","13:10","Chuck McNamee","Sustainable Design","1","Fa","IEC","306","US"],[7,"12:30","13:45","Maya Zakarin","Engineering Drawing & Design","1","F","IEC","201","US"],[7,"13:45","14:35","Annabelle Rolland","8 French","1","-","Middle School","108","MS"],[7,"13:45","14:35","Marianna Manganiello","8 Spanish","SP 8BCD","-","Middle School","110","MS"],[7,"13:50","15:05","Caroline Johnston","US History","4","E","Masters Hall","206","US"],[7,"13:50","14:30","Chuck McNamee","Entrepreneurial Leadership","1","Ea","IEC","306","US"],[7,"13:50","15:05","Eleanor Erickson","Algebra I","2","E","Masters Hall","319","US"],[7,"13:50","15:05","Jonathan Serrano","Spanish III","3","EL","Masters Hall","208","US"],[7,"13:50","15:05","Maggie Rivers","AP Physics C","2","EL","Morris Hall","111","US"],[7,"14:40","15:30","Marianna Manganiello","5 Lang/Health","5A","-","Middle School","110","MS"],[8,"08:30","09:45","Alejandra Leos","English 9","2","AL","Masters Hall","333","US"],[8,"08:30","09:20","Annabelle Rolland","8 French","1","-","Middle School","108","MS"],[8,"08:30","09:45","Emile Gable","English 9","1","AL","Masters Hall","306","US"],[8,"08:30","09:20","Jackie Telford","7 English","7C","-","Middle School","209","MS"],[8,"08:30","09:45","Jonathan Serrano","Spanish II","1","A","Masters Hall","208","US"],[8,"08:30","09:20","Marianna Manganiello","8 Spanish","SP 8BCD","-","Middle School","110","MS"],[8,"08:30","09:45","Maya Zakarin","Engineering Essentials","1","A","IEC","201","US"],[8,"10:30","11:45","Ailie Wood","AP Calculus BC","1","BL","Masters Hall","204","US"],[8,"10:30","11:45","Alejandra Leos","English 9","3","B","Morris Hall","113","US"],[8,"10:30","11:45","Caroline Johnston","International Relations","1","BL","Masters Hall","203","US"],[8,"10:30","11:10","Chuck McNamee","Intro to Social Entrepreneurship","1","Ba","IEC","306","US"],[8,"10:30","11:45","Eleanor Erickson","Algebra I","1","BL","Masters Hall","319","US"],[8,"10:30","11:45","Maya Zakarin","Principles of Engineering","1","B","IEC","201","US"],[8,"10:35","11:25","Annabelle Rolland","7 French","1","-","Middle School","211","MS"],[8,"10:35","11:25","Marianna Manganiello","7 Spanish-SP","7BCD","-","Middle School","110","MS"],[8,"11:50","13:05","Annabelle Rolland","Honors French III","1","CL","Masters Hall","306","US"],[8,"11:50","12:30","Chuck McNamee","Intro to Social Entrepreneurship","2","Ca","IEC","306","US"],[8,"11:50","13:05","Jonathan Serrano","Spanish II","2","CL","Masters Hall","204","US"],[8,"11:50","13:05","Maggie Rivers","Physics: Mechanics","1","CL","Morris Hall","111","US"],[8,"12:15","13:05","Jackie Telford","7 English","7B","-","Middle School","209","MS"],[8,"12:15","13:05","Marianna Manganiello","7 Spanish-SP","7A","-","Middle School","110","MS"],[8,"12:30","13:45","Eleanor Erickson","Geometry","2","C","Masters Hall","304","US"],[8,"13:45","14:35","Jackie Telford","7 English","7A","-","Middle School","209","MS"],[8,"13:50","15:05","Ailie Wood","Honors Precalculus","2","DL","Masters Hall","202","US"],[8,"13:50","15:05","Caroline Johnston","US History","3","DL","IEC","306","US"],[8,"13:50","15:05","Emile Gable","English 9","4","DL","Masters Hall","218","US"],[8,"13:50","15:05","Maggie Rivers","AP Physics C","1","D","Morris Hall","111","US"],[8,"13:50","15:05","Maya Zakarin","Principles of Engineering","2","DL","IEC","201","US"],[8,"14:40","15:30","Marianna Manganiello","5 Lang/Health","5A","-","Middle School","110","MS"]], CAL={"2026-09-10":1,"2026-09-11":2,"2026-09-14":3,"2026-09-15":4,"2026-09-16":5,"2026-09-17":6,"2026-09-18":7,"2026-09-22":8,"2026-09-23":1,"2026-09-24":2,"2026-09-25":3,"2026-09-28":4,"2026-09-29":5,"2026-09-30":6,"2026-10-01":7,"2026-10-02":8,"2026-10-05":1,"2026-10-06":2,"2026-10-07":3,"2026-10-08":4,"2026-10-09":5,"2026-10-13":6,"2026-10-14":7,"2026-10-15":8,"2026-10-16":1,"2026-10-19":2,"2026-10-20":3,"2026-10-21":4,"2026-10-22":5,"2026-10-26":6,"2026-10-27":7,"2026-10-28":8,"2026-10-29":1,"2026-10-30":2,"2026-11-02":3,"2026-11-03":4,"2026-11-04":5,"2026-11-05":6,"2026-11-06":7,"2026-11-09":8,"2026-11-10":1,"2026-11-11":2,"2026-11-12":3,"2026-11-13":4,"2026-11-16":5,"2026-11-17":6,"2026-11-18":7,"2026-11-19":8,"2026-11-30":1,"2026-12-01":2,"2026-12-02":3,"2026-12-03":4,"2026-12-04":5,"2026-12-07":6,"2026-12-08":7,"2026-12-09":8,"2026-12-10":1,"2026-12-11":2,"2026-12-14":3,"2026-12-15":4,"2026-12-16":5,"2026-12-17":6,"2026-12-18":7,"2027-01-05":8,"2027-01-06":1,"2027-01-07":2,"2027-01-08":3,"2027-01-11":4,"2027-01-12":5,"2027-01-13":6,"2027-01-14":7,"2027-01-15":8,"2027-01-25":1,"2027-01-26":2,"2027-01-27":3,"2027-01-28":4,"2027-01-29":5,"2027-02-01":6,"2027-02-02":7,"2027-02-04":8,"2027-02-05":1,"2027-02-08":2,"2027-02-09":3,"2027-02-10":4,"2027-02-11":5,"2027-02-12":6,"2027-02-17":7,"2027-02-18":8,"2027-02-19":1,"2027-02-22":2,"2027-02-23":3,"2027-02-24":4,"2027-02-25":5,"2027-02-26":6,"2027-03-01":7,"2027-03-02":8,"2027-03-03":1,"2027-03-04":2,"2027-03-05":3,"2027-03-08":4,"2027-03-09":5,"2027-03-10":6,"2027-03-11":7,"2027-03-12":8,"2027-03-30":1,"2027-03-31":2,"2027-04-01":3,"2027-04-02":4,"2027-04-05":5,"2027-04-06":6,"2027-04-07":7,"2027-04-08":8,"2027-04-09":1,"2027-04-12":2,"2027-04-13":3,"2027-04-14":4,"2027-04-15":5,"2027-04-16":6,"2027-04-19":7,"2027-04-20":8,"2027-04-21":1,"2027-04-23":2,"2027-04-26":3,"2027-04-27":4,"2027-04-28":5,"2027-04-29":6,"2027-04-30":7,"2027-05-03":8,"2027-05-04":1,"2027-05-05":2,"2027-05-06":3,"2027-05-07":4,"2027-05-10":5,"2027-05-11":6,"2027-05-12":7,"2027-05-13":8,"2027-05-14":1,"2027-05-17":2,"2027-05-18":3,"2027-05-19":4,"2027-05-20":5,"2027-05-21":6,"2027-05-24":7,"2027-05-25":8,"2027-05-26":1,"2027-05-27":2,"2027-05-28":3,"2027-06-01":4,"2027-06-02":5,"2027-06-03":6,"2027-06-04":7};
+const M=RAW.map((r,i)=>({id:i,day:r[0],start:r[1],end:r[2],teacher:r[3],course:r[4],
+  sect:r[5],block:r[6],bldg:r[7],room:r[8],div:r[9]}));
+const TEACHERS=[...new Set(M.map(m=>m.teacher))].sort();
+const DATES=Object.keys(CAL).sort();
+ 
+const LS={get(k,d){try{return JSON.parse(localStorage.getItem('nfs.'+k))??d}catch(e){return d}},
+          set(k,v){try{localStorage.setItem('nfs.'+k,JSON.stringify(v))}catch(e){}}};
+const mins=t=>{const[h,m]=t.split(':').map(Number);return h*60+m};
+const pretty=t=>{let[h,m]=t.split(':').map(Number);const ap=h<12?'am':'pm';
+  h=h%12||12;return h+':'+String(m).padStart(2,'0')+ap};
+const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const fmt=(k,long)=>{const[y,m,d]=k.split('-').map(Number);
+  return new Date(y,m-1,d).toLocaleDateString([],{weekday:long?'long':'short',month:'short',day:'numeric'})};
+const today=()=>iso(new Date());
+const nextSchoolDate=()=>DATES.find(k=>k>=today())||DATES[DATES.length-1];
+ 
+let state={
+  mode:LS.get('mode','day'),
+  day:LS.get('day',0)||null,
+  date:LS.get('date','')||null,
+  who:LS.get('who',[]),
+  open:null
+};
+if(!state.date||!CAL[state.date]) state.date=nextSchoolDate();
+if(!state.day) state.day=CAL[state.date];
+if(!Array.isArray(state.who)) state.who=[];
+state.who=state.who.filter(t=>TEACHERS.includes(t));
+const showing=()=>state.who.length?state.who:TEACHERS;
+ 
+const activeDay =()=> state.mode==='date' ? CAL[state.date] : state.day;
+const activeDate=()=> state.mode==='date' ? state.date
+  : (DATES.filter(k=>CAL[k]===state.day).find(k=>k>=today())||null);
+const isToday   =()=> activeDate()===today();
+ 
+/* ---------- header ---------- */
+function drawModes(){
+  mDay.setAttribute('aria-pressed',state.mode==='day');
+  mDate.setAttribute('aria-pressed',state.mode==='date');
+}
+function drawPicker(){
+  if(state.mode==='day'){
+    const mark=CAL[today()]||CAL[nextSchoolDate()];
+    let h='<div class="days" id="days">';
+    for(let d=1;d<=8;d++)
+      h+='<button class="day'+(d===mark?' mark':'')+'" data-day="'+d+'" aria-pressed="'
+        +(d===state.day)+'" aria-label="Cycle day '+d+'">'+d+'</button>';
+    picker.innerHTML=h+'</div>';
+  }else{
+    const i=DATES.indexOf(state.date);
+    picker.innerHTML='<div class="datenav">'+
+      '<button class="arrow" id="prevD" aria-label="Previous school day"'+(i<=0?' disabled':'')+'>&#8249;</button>'+
+      '<button class="datebtn">'+fmt(state.date,1)+
+        '<input type="date" id="dateIn" value="'+state.date+'" min="'+DATES[0]+'" max="'+DATES[DATES.length-1]+'" aria-label="Jump to date"></button>'+
+      '<button class="arrow" id="nextD" aria-label="Next school day"'+(i>=DATES.length-1?' disabled':'')+'>&#8250;</button></div>';
+  }
+}
+function drawSub(){
+  const d=activeDay(), dt=activeDate();
+  if(state.mode==='date'){
+    sub.innerHTML=(dt===today()?'Today &middot; ':'')+'<b>Day '+d+'</b>';
+  }else{
+    const t=CAL[today()];
+    sub.innerHTML = t===state.day ? 'Today is <b>Day '+state.day+'</b>'
+      : dt ? 'Next <b>Day '+state.day+'</b> is '+fmt(dt,1)
+           : 'No <b>Day '+state.day+'</b> left this year';
+  }
+}
+function drawPeople(){
+  const n=state.who.length;
+  people.innerHTML=(n===0?'Everyone':n===1?state.who[0]:n+' people')+
+    '<span>'+(n===0?'all '+TEACHERS.length:'change')+'</span>';
+}
+function tick(){clock.textContent=new Date().toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}
+ 
+/* ---------- rail ---------- */
+function visible(){
+  const pick=showing();
+  let r=M.filter(m=>m.day===activeDay()&&pick.includes(m.teacher));
+  return r.sort((a,b)=>mins(a.start)-mins(b.start)||a.teacher.localeCompare(b.teacher));
+}
+function draw(){
+  drawModes();drawPicker();drawSub();drawPeople();
+  const rows=visible();
+  if(!rows.length){
+    rail.innerHTML='<div class="empty"><b>Nobody teaches on Day '+activeDay()+'</b>'+(state.who.length?'Not with the people you have selected. Tap the name bar to widen it.':'Try another day.')+'</div>';return;
+  }
+  const live=isToday(), now=new Date().getHours()*60+new Date().getMinutes();
+  const groups={};rows.forEach(m=>{(groups[m.start]=groups[m.start]||[]).push(m)});
+  let html='',placed=false;
+  for(const s of Object.keys(groups).sort((a,b)=>mins(a)-mins(b))){
+    if(live&&!placed&&mins(s)>now){html+='<div class="nowline"><div class="nt">now</div><div class="nb"></div></div>';placed=true}
+    html+='<div class="slot"><div class="time">'+pretty(s)+'<em>'+pretty(groups[s][0].end)+'</em></div><div class="items">';
+    groups[s].forEach(m=>{
+      html+='<button class="item" data-id="'+m.id+'" aria-expanded="'+(state.open===m.id)+'">'+
+        '<span class="who">'+m.teacher+'</span>'+
+        '<span class="what">'+m.course+(m.sect?' &middot; section '+m.sect:'')+
+        (m.block&&m.block!=='-'?'<span class="tag">'+m.block+'</span>':'')+'</span>'+
+        '<span class="where">'+m.bldg+(m.room?' '+m.room:'')+'</span></button>';
+      if(state.open===m.id){
+        const dt=activeDate();
+        html+='<div class="panel"><div class="meta">'+pretty(m.start)+' to '+pretty(m.end)+
+          ' &middot; '+(m.div==='MS'?'Middle School':'Upper School')+
+          (dt?' &middot; next on '+fmt(dt,1):'')+'</div><div class="acts">'+
+          '<button class="btn" data-ics="'+m.id+'">Add to calendar</button></div></div>';
+      }
+    });
+    html+='</div></div>';
+  }
+  if(live&&!placed)html+='<div class="nowline"><div class="nt">now</div><div class="nb"></div></div>';
+  rail.innerHTML=html;
+}
+ 
+/* ---------- events ---------- */
+mDay.onclick =()=>{state.mode='day';LS.set('mode','day');state.open=null;draw()};
+mDate.onclick=()=>{state.mode='date';LS.set('mode','date');state.open=null;draw()};
+picker.addEventListener('click',e=>{
+  const d=e.target.closest('[data-day]');
+  if(d){state.day=+d.dataset.day;LS.set('day',state.day);state.open=null;draw();return}
+  const i=DATES.indexOf(state.date);
+  if(e.target.closest('#prevD')&&i>0){state.date=DATES[i-1];LS.set('date',state.date);state.open=null;draw()}
+  if(e.target.closest('#nextD')&&i<DATES.length-1){state.date=DATES[i+1];LS.set('date',state.date);state.open=null;draw()}
+});
+picker.addEventListener('change',e=>{
+  if(e.target.id!=='dateIn')return;
+  const v=e.target.value;
+  state.date=CAL[v]?v:(DATES.find(k=>k>=v)||DATES[DATES.length-1]);
+  LS.set('date',state.date);state.open=null;draw();
+});
+let draft=[];
+function drawWho(){
+  whoRows.innerHTML=TEACHERS.map(t=>{
+    const n=M.filter(m=>m.teacher===t).length/8;
+    return '<button class="wrow" data-t="'+t+'" aria-pressed="'+draft.includes(t)+'">'+
+      '<span class="box"></span>'+t+'<span class="wsub">'+n+' sections</span></button>';
+  }).join('');
+  whoAll.textContent=draft.length?'Clear all':'Select everyone';
+}
+people.onclick=()=>{draft=[...state.who];drawWho();dlgWho.showModal()};
+whoRows.addEventListener('click',e=>{
+  const r=e.target.closest('[data-t]');if(!r)return;
+  const t=r.dataset.t;
+  draft=draft.includes(t)?draft.filter(x=>x!==t):[...draft,t];
+  drawWho();
+});
+whoAll.onclick=()=>{draft=draft.length?[]:[...TEACHERS];drawWho()};
+whoDone.onclick=()=>{
+  state.who=(draft.length===TEACHERS.length?[]:draft);
+  LS.set('who',state.who);state.open=null;dlgWho.close();draw();
+};
+rail.addEventListener('click',e=>{
+  const ics=e.target.closest('[data-ics]');
+  if(ics){buildIcs([+ics.dataset.ics]);return}
+  const it=e.target.closest('.item');if(!it)return;
+  const id=+it.dataset.id;state.open=(state.open===id?null:id);draw();
+});
+ 
+/* ---------- ICS ---------- */
+const pad=n=>String(n).padStart(2,'0');
+function stamp(d,t){const[y,mo,dd]=d.split('-').map(Number),[h,mi]=t.split(':').map(Number);
+  return ''+y+pad(mo)+pad(dd)+'T'+pad(h)+pad(mi)+'00'}
+const esc=s=>String(s).replace(/([,;\\])/g,'\\$1').replace(/\n/g,'\\n');
+function buildIcs(ids){
+  const d=activeDate();
+  if(!d){alert('No remaining date on the calendar for Day '+activeDay()+'.');return}
+  const L=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Masters//New Faculty Schedules//EN','CALSCALE:GREGORIAN'];
+  ids.forEach(id=>{const m=M[id];
+    L.push('BEGIN:VEVENT','UID:nfs-'+id+'-'+d+'@masters',
+      'DTSTAMP:'+stamp(today(),'08:00')+'Z',
+      'DTSTART;TZID=America/New_York:'+stamp(d,m.start),
+      'DTEND;TZID=America/New_York:'+stamp(d,m.end),
+      'SUMMARY:'+esc('Observe '+m.teacher),
+      'LOCATION:'+esc(m.bldg+(m.room?' '+m.room:'')),
+      'DESCRIPTION:'+esc(m.course+(m.sect?' section '+m.sect:'')+
+        (m.block&&m.block!=='-'?' ('+m.block+' block)':'')+'\n'+
+        (m.div==='MS'?'Middle School':'Upper School')+', cycle day '+m.day),
+      'END:VEVENT')});
+  L.push('END:VCALENDAR');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([L.join('\r\n')],{type:'text/calendar;charset=utf-8'}));
+  a.download=(ids.length>1?'schedules-'+d:'observe-'+M[ids[0]].teacher.split(' ')[1].toLowerCase()+'-'+d)+'.ics';
+  document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+}
+tick();setInterval(tick,20000);setInterval(draw,120000);draw();
+</script></body></html>
