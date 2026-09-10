@@ -82,7 +82,25 @@ main{padding:0 0 40px}
 .nowline .nb{height:3px;background:var(--gold);margin-right:16px;border-radius:2px}
 .panel{padding:2px 16px 14px;background:var(--wash);border-top:1px solid var(--line-2)}
 .panel .meta{font-size:13.5px;color:var(--ink-2);margin:10px 0 12px;line-height:1.55}
-.acts{display:flex;gap:8px;flex-wrap:wrap}
+.slide{background:var(--paper);border:1px solid var(--line);border-radius:12px;
+  padding:11px 13px 9px;margin:0 0 12px}
+.shead{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:8px}
+.shead b{font-size:16px;font-weight:700;color:var(--plum-deep);letter-spacing:-.01em}
+.shead span{font-size:12px;color:var(--ink-3);font-weight:500}
+.ticks{display:flex;justify-content:space-between;font-size:11.5px;color:var(--ink-3);margin-top:3px}
+input.srange{-webkit-appearance:none;appearance:none;width:100%;height:26px;background:none;margin:0}
+input.srange::-webkit-slider-runnable-track{height:10px;border-radius:6px;background:var(--wash);
+  box-shadow:inset 0 0 0 1px var(--line)}
+input.srange::-moz-range-track{height:10px;border-radius:6px;background:var(--wash);
+  box-shadow:inset 0 0 0 1px var(--line)}
+input.srange::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:30px;height:26px;
+  margin-top:-8px;border-radius:8px;background:var(--gold);
+  box-shadow:0 1px 3px rgba(46,26,79,.35), inset 0 0 0 1.5px rgba(46,26,79,.25);cursor:grab}
+input.srange::-moz-range-thumb{width:30px;height:26px;border:0;border-radius:8px;background:var(--gold);
+  box-shadow:0 1px 3px rgba(46,26,79,.35), inset 0 0 0 1.5px rgba(46,26,79,.25);cursor:grab}
+input.srange:focus-visible{outline:2px solid var(--plum);outline-offset:3px;border-radius:8px}
+.acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.panel .btn.ghost{padding:10px 12px;font-size:13px;color:var(--ink-3);box-shadow:inset 0 0 0 1.5px var(--line-2)}
 .btn{padding:10px 14px;border-radius:10px;font-size:14.5px;font-weight:600;background:var(--plum);color:#fff}
 .btn.ghost{background:transparent;color:var(--plum);box-shadow:inset 0 0 0 1.5px var(--line)}
 .empty{padding:52px 24px;text-align:center;color:var(--ink-3);font-size:15px}
@@ -148,7 +166,12 @@ const DATES=Object.keys(CAL).sort();
 
 const LS={get(k,d){try{return JSON.parse(localStorage.getItem('nfs.'+k))??d}catch(e){return d}},
           set(k,v){try{localStorage.setItem('nfs.'+k,JSON.stringify(v))}catch(e){}}};
+const OBS=25;
+let offs={};
 const mins=t=>{const[h,m]=t.split(':').map(Number);return h*60+m};
+const hhmm=v=>String(Math.floor(v/60)).padStart(2,'0')+':'+String(v%60).padStart(2,'0');
+function slot(m,off){const a=mins(m.start)+off;return[hhmm(a),hhmm(a+OBS)]}
+function window25(m,off){const[a,b]=slot(m,off);return pretty(a)+' to '+pretty(b)}
 const pretty=t=>{let[h,m]=t.split(':').map(Number);const ap=h<12?'am':'pm';
   h=h%12||12;return h+':'+String(m).padStart(2,'0')+ap};
 const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
@@ -252,11 +275,25 @@ function draw(){
         (m.block&&m.block!=='-'?'<span class="tag">'+m.block+'</span>':'')+'</span>'+
         '<span class="where">'+m.bldg+(m.room?' '+m.room:'')+'</span></button>';
       if(state.open===m.id){
-        const dt=activeDate();
-        html+='<div class="panel"><div class="meta">'+pretty(m.start)+' to '+pretty(m.end)+
-          ' &middot; '+(m.div==='MS'?'Middle School':'Upper School')+
-          (dt?' &middot; next on '+fmt(dt,1):'')+'</div><div class="acts">'+
-          '<button class="btn" data-ics="'+m.id+'">Add to calendar</button></div></div>';
+        const dt=activeDate(), dur=mins(m.end)-mins(m.start), slack=dur-OBS;
+        if(offs[m.id]===undefined) offs[m.id]=0;
+        const off=Math.min(offs[m.id],Math.max(0,slack));
+        html+='<div class="panel"><div class="meta">'+
+          'Class runs '+pretty(m.start)+' to '+pretty(m.end)+' &middot; '+
+          (m.div==='MS'?'Middle School':'Upper School')+
+          (dt?' &middot; next on '+fmt(dt,1):'')+'</div>'+
+          '<div class="slide">'+
+            '<div class="shead"><b id="sw'+m.id+'">'+window25(m,off)+'</b>'+
+              '<span>'+OBS+' minute visit</span></div>'+
+            (slack>0
+              ? '<input class="srange" type="range" min="0" max="'+slack+'" step="5" value="'+off+
+                '" data-slide="'+m.id+'" aria-label="When to arrive">'+
+                '<div class="ticks"><span>'+pretty(m.start)+'</span><span>'+pretty(m.end)+'</span></div>'
+              : '<div class="ticks"><span>Fills the whole block</span></div>')+
+          '</div>'+
+          '<div class="acts">'+
+          '<button class="btn" data-out="'+m.id+'">Add to Outlook</button>'+
+          '<button class="btn ghost" data-ics="'+m.id+'">.ics</button></div></div>';
       }
     });
     html+='</div></div>';
@@ -316,12 +353,50 @@ whoDone.onclick=()=>{
   state.who=(draft.length===TEACHERS.length?[]:draft);
   LS.set('who',state.who);state.open=null;dlgWho.close();draw();
 };
+rail.addEventListener('input',e=>{
+  const r=e.target.closest('[data-slide]');if(!r)return;
+  const id=+r.dataset.slide;
+  offs[id]=+r.value;
+  const lab=document.getElementById('sw'+id);
+  if(lab) lab.textContent=window25(M[id],offs[id]);
+});
 rail.addEventListener('click',e=>{
+  const o=e.target.closest('[data-out]');
+  if(o){openLink(outlookUrl(+o.dataset.out));return}
   const ics=e.target.closest('[data-ics]');
   if(ics){buildIcs([+ics.dataset.ics]);return}
   const it=e.target.closest('.item');if(!it)return;
   const id=+it.dataset.id;state.open=(state.open===id?null:id);draw();
 });
+
+/* ---------- calendar links ---------- */
+function evt(id){
+  const m=M[id], d=activeDate();
+  if(!d) return null;
+  const dur=mins(m.end)-mins(m.start);
+  const off=Math.min(offs[id]||0, Math.max(0,dur-OBS));
+  const [a,b]=slot(m,off);
+  const cls=m.course+(m.sect?' '+m.sect:'');
+  return {m,d,start:a,end:b,
+    title:'Observe '+m.teacher+': '+cls,
+    loc:m.bldg+(m.room?' '+m.room:''),
+    body:cls+(m.block&&m.block!=='-'?' ('+m.block+' block)':'')+
+      ', '+(m.div==='MS'?'Middle School':'Upper School')+
+      '. Cycle day '+m.day+'. Class runs '+pretty(m.start)+' to '+pretty(m.end)+'.'};
+}
+function outlookUrl(id){
+  const e=evt(id); if(!e) return null;
+  return 'https://outlook.office.com/calendar/0/deeplink/compose?path=/calendar/action/compose'+
+    '&subject='+encodeURIComponent(e.title)+
+    '&startdt='+e.d+'T'+e.start+':00'+
+    '&enddt='+e.d+'T'+e.end+':00'+
+    '&location='+encodeURIComponent(e.loc)+
+    '&body='+encodeURIComponent(e.body);
+}
+function openLink(u){
+  if(!u){alert('No remaining date on the calendar for Day '+activeDay()+'.');return}
+  window.open(u,'_blank','noopener');
+}
 
 /* ---------- ICS ---------- */
 const pad=n=>String(n).padStart(2,'0');
@@ -332,16 +407,14 @@ function buildIcs(ids){
   const d=activeDate();
   if(!d){alert('No remaining date on the calendar for Day '+activeDay()+'.');return}
   const L=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Masters//New Faculty Schedules//EN','CALSCALE:GREGORIAN'];
-  ids.forEach(id=>{const m=M[id];
+  ids.forEach(id=>{const e=evt(id); if(!e) return;
     L.push('BEGIN:VEVENT','UID:nfs-'+id+'-'+d+'@masters',
       'DTSTAMP:'+stamp(today(),'08:00')+'Z',
-      'DTSTART;TZID=America/New_York:'+stamp(d,m.start),
-      'DTEND;TZID=America/New_York:'+stamp(d,m.end),
-      'SUMMARY:'+esc('Observe '+m.teacher),
-      'LOCATION:'+esc(m.bldg+(m.room?' '+m.room:'')),
-      'DESCRIPTION:'+esc(m.course+(m.sect?' section '+m.sect:'')+
-        (m.block&&m.block!=='-'?' ('+m.block+' block)':'')+'\n'+
-        (m.div==='MS'?'Middle School':'Upper School')+', cycle day '+m.day),
+      'DTSTART;TZID=America/New_York:'+stamp(d,e.start),
+      'DTEND;TZID=America/New_York:'+stamp(d,e.end),
+      'SUMMARY:'+esc(e.title),
+      'LOCATION:'+esc(e.loc),
+      'DESCRIPTION:'+esc(e.body),
       'END:VEVENT')});
   L.push('END:VCALENDAR');
   const a=document.createElement('a');
